@@ -14,9 +14,16 @@ function getNodeEnv(value: string | undefined): NodeEnv {
   return 'development';
 }
 
+const VALID_AI_PROVIDERS: AIProviderName[] = ['mock', 'gemini'];
+
 function getAIProvider(value: string | undefined, nodeEnv: NodeEnv): AIProviderName {
-  if (value === 'gemini') return 'gemini';
-  return nodeEnv === 'production' ? 'gemini' : 'mock';
+  if (value === undefined || value === '') {
+    return nodeEnv === 'production' ? 'gemini' : 'mock';
+  }
+  if (value === 'mock' || value === 'gemini') return value;
+  throw new Error(
+    `Invalid AI_PROVIDER: "${value}". Valid values: ${VALID_AI_PROVIDERS.join(', ')}.`,
+  );
 }
 
 const nodeEnv = getNodeEnv(process.env.NODE_ENV);

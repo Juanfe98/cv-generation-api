@@ -22,3 +22,11 @@ export class AiNotImplementedError extends Error {
     this.name = 'AiNotImplementedError';
   }
 }
+
+// Thrown when AI_PROVIDER is set to an unrecognised value.
+export class AiConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AiConfigurationError';
+  }
+}

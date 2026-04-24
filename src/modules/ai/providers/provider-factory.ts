@@ -1,12 +1,18 @@
 import { env } from '../../../config/env';
 import type { AIProviderName } from '../ai.types';
+import { AiConfigurationError } from '../ai.errors';
 import type { AIProvider } from './ai-provider';
 import { MockAIProvider } from './mock.provider';
 import { GeminiAIProvider } from './gemini.provider';
 
 export type { AIProviderName };
 
-// Selects the active provider from env. Falls back to mock in test/dev.
+/**
+ * Returns the active AIProvider implementation.
+ *
+ * Provider is read from env.AI_PROVIDER (set at startup).
+ * Pass `override` only in tests — never in route or use-case code.
+ */
 export function createAIProvider(override?: AIProviderName): AIProvider {
   const name: AIProviderName = override ?? env.AI_PROVIDER;
 
@@ -17,7 +23,9 @@ export function createAIProvider(override?: AIProviderName): AIProvider {
       return new GeminiAIProvider();
     default: {
       const exhaustive: never = name;
-      throw new Error(`Unknown AI provider: ${String(exhaustive)}`);
+      throw new AiConfigurationError(
+        `Unknown AI provider: "${String(exhaustive)}". Valid values: mock, gemini.`,
+      );
     }
   }
 }
