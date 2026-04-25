@@ -8,7 +8,7 @@ import type {
   ImproveTextInput,
   ImproveTextResult,
 } from './ai.types';
-import { AiProviderError } from './ai.errors';
+import { AiProviderError, isAiError } from './ai.errors';
 
 // Single entry point for all AI operations.
 // Wraps provider calls with consistent error handling.
@@ -26,6 +26,7 @@ export class AiService {
     try {
       return await this.provider.generateExperienceBullets(input);
     } catch (err) {
+      if (isAiError(err)) throw err;
       throw new AiProviderError('Failed to generate experience bullets', err);
     }
   }
@@ -34,6 +35,7 @@ export class AiService {
     try {
       return await this.provider.improveText(input);
     } catch (err) {
+      if (isAiError(err)) throw err;
       throw new AiProviderError('Failed to improve text', err);
     }
   }
@@ -42,6 +44,7 @@ export class AiService {
     try {
       return await this.provider.analyzeCv(input);
     } catch (err) {
+      if (isAiError(err)) throw err;
       throw new AiProviderError('Failed to analyze CV', err);
     }
   }
