@@ -1,6 +1,6 @@
 import { generateExperienceBulletsUseCase } from './generate-experience-bullets.use-case';
 import { MockAIProvider } from '../providers/mock.provider';
-import { AiValidationError } from '../ai.errors';
+import { AiValidationError, AiNormalizationError } from '../ai.errors';
 import type { AIProvider } from '../providers/ai-provider';
 import type { GenerateExperienceBulletsResult } from '../ai.types';
 
@@ -75,7 +75,7 @@ describe('generateExperienceBulletsUseCase', () => {
   });
 
   describe('normalization', () => {
-    it('throws AiValidationError when provider returns no valid suggestions', async () => {
+    it('throws AiNormalizationError when provider returns no valid suggestions', async () => {
       const emptyProvider: AIProvider = {
         generateExperienceBullets: async () => ({ suggestions: [] as never }),
         improveText: jest.fn(),
@@ -84,7 +84,7 @@ describe('generateExperienceBulletsUseCase', () => {
 
       await expect(
         generateExperienceBulletsUseCase(emptyProvider, VALID_INPUT),
-      ).rejects.toThrow(AiValidationError);
+      ).rejects.toThrow(AiNormalizationError);
     });
 
     it('strips suggestions with empty text via injected normalizer', async () => {

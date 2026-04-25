@@ -51,7 +51,7 @@ describe('AI routes', () => {
       }
     });
 
-    it('returns 400 with VALIDATION_ERROR when role is missing', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when role is missing', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
@@ -60,11 +60,11 @@ describe('AI routes', () => {
 
       expect(res.statusCode).toBe(400);
       const body = res.json();
-      expect(body.error.code).toBe('VALIDATION_ERROR');
+      expect(body.error.code).toBe('AI_VALIDATION_ERROR');
       expect(typeof body.error.message).toBe('string');
     });
 
-    it('returns 400 with VALIDATION_ERROR when role is empty string', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when role is empty string', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
@@ -72,10 +72,10 @@ describe('AI routes', () => {
       });
 
       expect(res.statusCode).toBe(400);
-      expect(res.json().error.code).toBe('VALIDATION_ERROR');
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
     });
 
-    it('returns 400 with VALIDATION_ERROR when body is empty object', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when body is empty object', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
@@ -83,7 +83,7 @@ describe('AI routes', () => {
       });
 
       expect(res.statusCode).toBe(400);
-      expect(res.json().error.code).toBe('VALIDATION_ERROR');
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
     });
 
     it('accepts optional fields without error', async () => {
@@ -137,7 +137,7 @@ describe('AI routes', () => {
       }
     });
 
-    it('returns 400 with VALIDATION_ERROR when text is missing', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when text is missing', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
@@ -145,10 +145,10 @@ describe('AI routes', () => {
       });
 
       expect(res.statusCode).toBe(400);
-      expect(res.json().error.code).toBe('VALIDATION_ERROR');
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
     });
 
-    it('returns 400 with VALIDATION_ERROR when section is invalid', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when section is invalid', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
@@ -156,10 +156,10 @@ describe('AI routes', () => {
       });
 
       expect(res.statusCode).toBe(400);
-      expect(res.json().error.code).toBe('VALIDATION_ERROR');
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
     });
 
-    it('returns 400 with VALIDATION_ERROR when section is missing', async () => {
+    it('returns 400 with AI_VALIDATION_ERROR when section is missing', async () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
@@ -167,7 +167,7 @@ describe('AI routes', () => {
       });
 
       expect(res.statusCode).toBe(400);
-      expect(res.json().error.code).toBe('VALIDATION_ERROR');
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
     });
 
     it('accepts optional tone and targetRole', async () => {
@@ -198,6 +198,125 @@ describe('AI routes', () => {
 
         expect(res.statusCode).toBe(200);
       }
+    });
+  });
+
+  // ─── POST /api/ai/analyze-cv ─────────────────────────────────────────────
+
+  describe('POST /api/ai/analyze-cv', () => {
+    const VALID_CV = {
+      summary: 'Senior backend engineer with 8 years of experience.',
+      experience: [{ role: 'Backend Engineer', company: 'Acme', years: 4 }],
+      skills: ['TypeScript', 'Node.js'],
+    };
+
+    it('returns 200 with score, strengths, and improvements for valid input', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { cv: VALID_CV, targetRole: 'Staff Engineer' },
+      });
+
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(typeof body.score).toBe('number');
+      expect(body.score).toBeGreaterThanOrEqual(0);
+      expect(body.score).toBeLessThanOrEqual(100);
+      expect(Array.isArray(body.strengths)).toBe(true);
+      expect(Array.isArray(body.improvements)).toBe(true);
+    });
+
+    it('each improvement has section, message, and priority', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { cv: VALID_CV },
+      });
+
+      const { improvements } = res.json();
+      for (const item of improvements) {
+        expect(typeof item.section).toBe('string');
+        expect(typeof item.message).toBe('string');
+        expect(['low', 'medium', 'high']).toContain(item.priority);
+      }
+    });
+
+    it('accepts input without targetRole', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { cv: VALID_CV },
+      });
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('returns 400 with AI_VALIDATION_ERROR when cv is missing', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { targetRole: 'Engineer' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
+    });
+
+    it('returns 400 with AI_VALIDATION_ERROR when body is empty', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
+    });
+
+    it('returns 400 with AI_VALIDATION_ERROR when cv is not an object', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { cv: 'not an object' },
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
+    });
+
+    it('returns 400 with AI_VALIDATION_ERROR when targetRole exceeds max length', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: { cv: {}, targetRole: 'x'.repeat(121) },
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json().error.code).toBe('AI_VALIDATION_ERROR');
+    });
+
+    it('does not leak internal error details in error response', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: {},
+      });
+
+      const body = res.json();
+      expect(body).not.toHaveProperty('stack');
+      expect(body).not.toHaveProperty('statusCode');
+    });
+
+    it('error response has code and message as strings', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/ai/analyze-cv',
+        payload: {},
+      });
+
+      const { error } = res.json();
+      expect(typeof error.code).toBe('string');
+      expect(typeof error.message).toBe('string');
     });
   });
 

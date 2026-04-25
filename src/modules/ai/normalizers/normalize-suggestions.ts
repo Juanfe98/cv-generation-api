@@ -1,4 +1,4 @@
-import { AiValidationError } from '../ai.errors';
+import { AiNormalizationError } from '../ai.errors';
 import { suggestionsResponseSchema } from '../validators/ai.schemas';
 import type { SuggestionsResponse } from '../validators/ai.schemas';
 
@@ -42,7 +42,7 @@ export function normalizeSuggestions(
   const parsed = suggestionsResponseSchema.safeParse({ suggestions: valid });
 
   if (!parsed.success) {
-    throw new AiValidationError(
+    throw new AiNormalizationError(
       'AI suggestions normalization failed: no valid suggestions in provider output',
     );
   }

@@ -8,11 +8,11 @@ import type {
   ImproveTextInput,
   ImproveTextResult,
 } from '../ai.types';
-import { AiConfigurationError, AiProviderError } from '../ai.errors';
+import { AiConfigurationError, AiGenerationFailedError, AiProviderError } from '../ai.errors';
 import { buildGenerateExperienceBulletsPrompt } from '../prompts/generate-experience-bullets.prompt';
 import { buildImproveTextPrompt } from '../prompts/improve-text.prompt';
 import { buildAnalyzeCvPrompt } from '../prompts/analyze-cv.prompt';
-import { normalizeAnalysis, type RawAnalysis } from '../normalizers/normalize-analysis';
+import { normalizeAnalysis } from '../normalizers/normalize-analysis';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const GEMINI_MODEL = 'gemini-1.5-flash';
@@ -28,7 +28,7 @@ function extractModelText(body: unknown): string {
   const response = body as GeminiApiResponse;
   const text = response?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== 'string' || !text.trim()) {
-    throw new AiProviderError('Unexpected Gemini response shape: could not extract model text');
+    throw new AiGenerationFailedError('Gemini returned an empty or malformed response');
   }
   return text;
 }
@@ -92,7 +92,7 @@ export class GeminiAIProvider implements AIProvider {
 
   async analyzeCv(input: AnalyzeCvInput): Promise<AnalyzeCvResult> {
     const prompt = buildAnalyzeCvPrompt(input);
-    const raw = (await this.callGemini(prompt)) as RawAnalysis;
+    const raw = await this.callGemini(prompt);
     return normalizeAnalysis(raw);
   }
 }

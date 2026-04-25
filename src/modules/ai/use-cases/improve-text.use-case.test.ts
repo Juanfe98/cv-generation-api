@@ -1,6 +1,6 @@
 import { improveTextUseCase } from './improve-text.use-case';
 import { MockAIProvider } from '../providers/mock.provider';
-import { AiValidationError } from '../ai.errors';
+import { AiValidationError, AiNormalizationError } from '../ai.errors';
 import type { AIProvider } from '../providers/ai-provider';
 import type { ImproveTextResult } from '../ai.types';
 
@@ -135,7 +135,7 @@ describe('improveTextUseCase', () => {
       );
     });
 
-    it('throws AiValidationError when provider returns no valid suggestions', async () => {
+    it('throws AiNormalizationError when provider returns no valid suggestions', async () => {
       const emptyProvider: AIProvider = {
         improveText: async () => ({ suggestions: [] as never }),
         generateExperienceBullets: jest.fn(),
@@ -144,7 +144,7 @@ describe('improveTextUseCase', () => {
 
       await expect(
         improveTextUseCase(emptyProvider, VALID_INPUT),
-      ).rejects.toThrow(AiValidationError);
+      ).rejects.toThrow(AiNormalizationError);
     });
 
     it('drops non-string reason values', async () => {
