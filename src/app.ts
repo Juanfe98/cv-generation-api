@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance } from 'fastify';
 import sensible from '@fastify/sensible';
 import { env } from './config/env';
 import { healthRoutes } from './routes/health.routes';
+import { aiRoutes } from './routes/ai.routes';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -25,6 +26,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(healthRoutes);
+  await app.register(aiRoutes);
 
   return app;
 }
