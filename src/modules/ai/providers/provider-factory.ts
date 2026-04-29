@@ -4,6 +4,7 @@ import { AiConfigurationError } from '../ai.errors';
 import type { AIProvider } from './ai-provider';
 import { MockAIProvider } from './mock.provider';
 import { GeminiAIProvider } from './gemini.provider';
+import { OpenRouterAIProvider } from './openrouter.provider';
 
 export type { AIProviderName };
 
@@ -21,10 +22,12 @@ export function createAIProvider(override?: AIProviderName): AIProvider {
       return new MockAIProvider();
     case 'gemini':
       return new GeminiAIProvider();
+    case 'openrouter':
+      return new OpenRouterAIProvider();
     default: {
       const exhaustive: never = name;
       throw new AiConfigurationError(
-        `Unknown AI provider: "${String(exhaustive)}". Valid values: mock, gemini.`,
+        `Unknown AI provider: "${String(exhaustive)}". Valid values: mock, gemini, openrouter.`,
       );
     }
   }

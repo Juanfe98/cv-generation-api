@@ -66,6 +66,7 @@ describe('generateExperienceBulletsUseCase', () => {
         generateExperienceBullets: () => Promise.reject(new Error('provider down')),
         improveText: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       await expect(
@@ -80,6 +81,7 @@ describe('generateExperienceBulletsUseCase', () => {
         generateExperienceBullets: async () => ({ suggestions: [] as never }),
         improveText: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       await expect(
@@ -97,6 +99,7 @@ describe('generateExperienceBulletsUseCase', () => {
         generateExperienceBullets: async () => ({ suggestions: rawSuggestions as never }),
         improveText: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await generateExperienceBulletsUseCase(fakeProvider, VALID_INPUT);
@@ -114,6 +117,7 @@ describe('generateExperienceBulletsUseCase', () => {
         generateExperienceBullets: async () => ({ suggestions: manySuggestions as never }),
         improveText: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await generateExperienceBulletsUseCase(fakeProvider, VALID_INPUT);
@@ -131,6 +135,7 @@ describe('generateExperienceBulletsUseCase', () => {
         generateExperienceBullets: async () => ({ suggestions: rawSuggestions as never }),
         improveText: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await generateExperienceBulletsUseCase(fakeProvider, VALID_INPUT);

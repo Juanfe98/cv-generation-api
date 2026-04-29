@@ -1,17 +1,28 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import sensible from '@fastify/sensible';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import { env } from './config/env';
 import { healthRoutes } from './routes/health.routes';
 import { aiRoutes } from './routes/ai.routes';
+import { cvImportRoutes } from './routes/cv-import.routes';
+
+const BODY_LIMIT_BYTES = 256 * 1024; // 256 KB — sufficient for CV text payloads
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: env.NODE_ENV === 'test' ? 'silent' : 'info',
     },
+    bodyLimit: BODY_LIMIT_BYTES,
   });
 
   await app.register(sensible);
+
+  await app.register(cors, {
+    origin: env.CORS_ORIGIN,
+    methods: ['GET', 'POST', 'OPTIONS'],
+  });
 
   app.setErrorHandler((error, _request, reply) => {
     app.log.error(error);
@@ -26,7 +37,25 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(healthRoutes);
-  await app.register(aiRoutes);
+
+  // Rate-limited scope for AI and CV import routes — skipped in test to prevent flaky tests.
+  await app.register(async (scope) => {
+    if (env.NODE_ENV !== 'test') {
+      await scope.register(rateLimit, {
+        max: env.RATE_LIMIT_MAX,
+        timeWindow: env.RATE_LIMIT_WINDOW,
+        keyGenerator: (request) => request.ip,
+        errorResponseBuilder: () => ({
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: 'Too many requests, please try again later',
+          },
+        }),
+      });
+    }
+    await scope.register(aiRoutes);
+    await scope.register(cvImportRoutes);
+  });
 
   return app;
 }

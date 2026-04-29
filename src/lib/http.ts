@@ -10,7 +10,12 @@ export class HttpError extends Error {
   }
 }
 
-export function httpsPost(url: string, payload: unknown, timeoutMs: number): Promise<unknown> {
+export function httpsPost(
+  url: string,
+  payload: unknown,
+  timeoutMs: number,
+  extraHeaders: Record<string, string> = {},
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
     const parsed = new URL(url);
@@ -23,6 +28,7 @@ export function httpsPost(url: string, payload: unknown, timeoutMs: number): Pro
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
+          ...extraHeaders,
         },
       },
       (res) => {

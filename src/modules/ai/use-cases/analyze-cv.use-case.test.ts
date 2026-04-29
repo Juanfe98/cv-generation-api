@@ -110,6 +110,7 @@ describe('analyzeCvUseCase — provider integration', () => {
       analyzeCv: () => Promise.reject(new Error('provider down')),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     await expect(
@@ -130,6 +131,7 @@ describe('analyzeCvUseCase — normalization', () => {
       }),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     const result = await analyzeCvUseCase(provider, VALID_INPUT);
@@ -145,6 +147,7 @@ describe('analyzeCvUseCase — normalization', () => {
       }),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     const result = await analyzeCvUseCase(provider, VALID_INPUT);
@@ -156,6 +159,7 @@ describe('analyzeCvUseCase — normalization', () => {
       analyzeCv: async () => ({ strengths: [], improvements: [] } as never),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     await expect(
@@ -168,6 +172,7 @@ describe('analyzeCvUseCase — normalization', () => {
       analyzeCv: async () => null as never,
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     await expect(
@@ -187,6 +192,7 @@ describe('analyzeCvUseCase — normalization', () => {
       }),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     const result = await analyzeCvUseCase(provider, VALID_INPUT);
@@ -203,6 +209,7 @@ describe('analyzeCvUseCase — normalization', () => {
       }),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     const result = await analyzeCvUseCase(provider, VALID_INPUT);
@@ -219,6 +226,7 @@ describe('analyzeCvUseCase — normalization', () => {
       }),
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
+      parseCv: jest.fn(),
     };
 
     const result = await analyzeCvUseCase(provider, VALID_INPUT);

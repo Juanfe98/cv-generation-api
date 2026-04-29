@@ -108,6 +108,7 @@ describe('improveTextUseCase', () => {
         improveText: async () => ({ suggestions: manySuggestions as never }),
         generateExperienceBullets: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await improveTextUseCase(fakeProvider, VALID_INPUT);
@@ -125,6 +126,7 @@ describe('improveTextUseCase', () => {
         improveText: async () => ({ suggestions: rawSuggestions as never }),
         generateExperienceBullets: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await improveTextUseCase(fakeProvider, VALID_INPUT);
@@ -140,6 +142,7 @@ describe('improveTextUseCase', () => {
         improveText: async () => ({ suggestions: [] as never }),
         generateExperienceBullets: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       await expect(
@@ -157,6 +160,7 @@ describe('improveTextUseCase', () => {
         improveText: async () => ({ suggestions: rawSuggestions as never }),
         generateExperienceBullets: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       const result = await improveTextUseCase(fakeProvider, VALID_INPUT);
@@ -172,6 +176,7 @@ describe('improveTextUseCase', () => {
         improveText: () => Promise.reject(new Error('provider unavailable')),
         generateExperienceBullets: jest.fn(),
         analyzeCv: jest.fn(),
+        parseCv: jest.fn(),
       };
 
       await expect(

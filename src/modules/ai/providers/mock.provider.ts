@@ -7,6 +7,7 @@ import type {
   ImproveTextInput,
   ImproveTextResult,
 } from '../ai.types';
+import type { ParseCvResponse } from '../../cv-import/cv-import.schemas';
 
 export class MockAIProvider implements AIProvider {
   async generateExperienceBullets(
@@ -93,6 +94,56 @@ export class MockAIProvider implements AIProvider {
 
     return {
       suggestions: sectionSuggestions[input.section] ?? sectionSuggestions.experience,
+    };
+  }
+
+  async parseCv(_cvText: string): Promise<ParseCvResponse> {
+    return {
+      name: 'Jane Doe',
+      email: 'jane.doe@example.com',
+      phone: '+1 555 000 1234',
+      location: 'San Francisco, CA',
+      summary: 'Senior Software Engineer with 8 years of experience building scalable web applications.',
+      experience: [
+        {
+          company: 'Acme Corp',
+          role: 'Senior Software Engineer',
+          startDate: '2020-03',
+          endDate: undefined,
+          current: true,
+          highlights: [
+            'Led migration of monolith to microservices, reducing deployment time by 60%',
+            'Mentored 4 junior engineers and ran weekly technical reviews',
+          ],
+        },
+        {
+          company: 'Startup Inc',
+          role: 'Software Engineer',
+          startDate: '2017-06',
+          endDate: '2020-02',
+          current: false,
+          highlights: [
+            'Built the core API serving 1M+ daily requests',
+          ],
+        },
+      ],
+      education: [
+        {
+          institution: 'University of California, Berkeley',
+          degree: 'Bachelor of Science',
+          field: 'Computer Science',
+          startDate: '2013-09',
+          endDate: '2017-05',
+        },
+      ],
+      skills: ['TypeScript', 'React', 'Node.js', 'PostgreSQL', 'Docker', 'AWS'],
+      languages: [
+        { name: 'English', level: 'Native' },
+        { name: 'Spanish', level: 'Conversational' },
+      ],
+      certifications: [
+        { name: 'AWS Solutions Architect', issuer: 'Amazon', date: '2022-04' },
+      ],
     };
   }
 

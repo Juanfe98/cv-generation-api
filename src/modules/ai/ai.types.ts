@@ -11,7 +11,7 @@ import type {
   SuggestionsResponse,
 } from './validators/ai.schemas';
 
-export type AIProviderName = 'mock' | 'gemini';
+export type AIProviderName = 'mock' | 'gemini' | 'openrouter';
 
 export type { AiSuggestion };
 
