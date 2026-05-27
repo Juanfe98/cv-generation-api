@@ -15,14 +15,14 @@ export async function generateExperienceBulletsUseCase(
   rawInput: unknown,
   deps: GenerateExperienceBulletsDeps = {},
 ): Promise<GenerateExperienceBulletsResult> {
-  const {
-    buildPrompt = buildGenerateExperienceBulletsPrompt,
-    normalize = normalizeSuggestions,
-  } = deps;
+  const { buildPrompt = buildGenerateExperienceBulletsPrompt, normalize = normalizeSuggestions } =
+    deps;
 
   const parsed = generateExperienceBulletsRequestSchema.safeParse(rawInput);
   if (!parsed.success) {
-    throw new AiValidationError(`Invalid generate-experience-bullets input: ${parsed.error.message}`);
+    throw new AiValidationError(
+      `Invalid generate-experience-bullets input: ${parsed.error.message}`,
+    );
   }
 
   const validInput = parsed.data;

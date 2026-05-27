@@ -50,7 +50,9 @@ export function httpsPost(
       },
     );
 
-    req.setTimeout(timeoutMs, () => req.destroy(new Error(`Request timed out after ${timeoutMs}ms`)));
+    req.setTimeout(timeoutMs, () =>
+      req.destroy(new Error(`Request timed out after ${timeoutMs}ms`)),
+    );
     req.on('error', reject);
     req.write(body);
     req.end();

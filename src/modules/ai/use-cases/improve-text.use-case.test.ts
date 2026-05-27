@@ -39,9 +39,9 @@ describe('improveTextUseCase', () => {
     });
 
     it('throws AiValidationError when input is not an object', async () => {
-      await expect(
-        improveTextUseCase(new MockAIProvider(), 'raw string'),
-      ).rejects.toThrow(AiValidationError);
+      await expect(improveTextUseCase(new MockAIProvider(), 'raw string')).rejects.toThrow(
+        AiValidationError,
+      );
     });
   });
 
@@ -145,9 +145,9 @@ describe('improveTextUseCase', () => {
         parseCv: jest.fn(),
       };
 
-      await expect(
-        improveTextUseCase(emptyProvider, VALID_INPUT),
-      ).rejects.toThrow(AiNormalizationError);
+      await expect(improveTextUseCase(emptyProvider, VALID_INPUT)).rejects.toThrow(
+        AiNormalizationError,
+      );
     });
 
     it('drops non-string reason values', async () => {
@@ -179,9 +179,9 @@ describe('improveTextUseCase', () => {
         parseCv: jest.fn(),
       };
 
-      await expect(
-        improveTextUseCase(failingProvider, VALID_INPUT),
-      ).rejects.toThrow('provider unavailable');
+      await expect(improveTextUseCase(failingProvider, VALID_INPUT)).rejects.toThrow(
+        'provider unavailable',
+      );
     });
   });
 

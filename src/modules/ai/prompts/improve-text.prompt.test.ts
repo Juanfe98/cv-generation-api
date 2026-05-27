@@ -66,7 +66,10 @@ describe('buildImproveTextPrompt', () => {
     });
 
     it('includes the original text', () => {
-      const prompt = buildImproveTextPrompt({ text: 'Managed deployments.', section: 'experience' });
+      const prompt = buildImproveTextPrompt({
+        text: 'Managed deployments.',
+        section: 'experience',
+      });
       expect(prompt).toContain('Text: Managed deployments.');
     });
 
@@ -102,7 +105,11 @@ describe('buildImproveTextPrompt', () => {
 
   describe('pure function behaviour', () => {
     it('returns the same output for the same input', () => {
-      const input = { text: 'Led backend team.', section: 'experience' as const, tone: 'impactful' as const };
+      const input = {
+        text: 'Led backend team.',
+        section: 'experience' as const,
+        tone: 'impactful' as const,
+      };
       expect(buildImproveTextPrompt(input)).toBe(buildImproveTextPrompt(input));
     });
 

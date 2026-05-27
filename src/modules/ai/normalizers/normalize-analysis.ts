@@ -26,8 +26,10 @@ function extractImprovements(raw: Record<string, unknown>): AnalyzeCvResult['imp
     .filter((item): item is Record<string, unknown> => item !== null && typeof item === 'object')
     .filter(
       (item) =>
-        typeof item.section === 'string' && item.section.trim().length > 0 &&
-        typeof item.message === 'string' && item.message.trim().length > 0 &&
+        typeof item.section === 'string' &&
+        item.section.trim().length > 0 &&
+        typeof item.message === 'string' &&
+        item.message.trim().length > 0 &&
         VALID_PRIORITIES.has(item.priority as string),
     )
     .map((item) => ({
@@ -49,9 +51,7 @@ export function normalizeAnalysis(raw: unknown): AnalyzeCvResult {
 
   const validated = analyzeCvResponseSchema.safeParse({ score, strengths, improvements });
   if (!validated.success) {
-    throw new AiNormalizationError(
-      `AI analysis normalization failed: ${validated.error.message}`,
-    );
+    throw new AiNormalizationError(`AI analysis normalization failed: ${validated.error.message}`);
   }
 
   return validated.data;

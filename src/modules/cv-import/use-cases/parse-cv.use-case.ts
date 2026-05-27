@@ -29,7 +29,7 @@ export async function parseCvUseCase(
   }
 
   const isAcceptedMime = (ACCEPTED_MIME_TYPES as readonly string[]).includes(input.mimetype);
-  const isAcceptedExt = (ACCEPTED_EXTENSIONS as readonly string[]).some(ext =>
+  const isAcceptedExt = (ACCEPTED_EXTENSIONS as readonly string[]).some((ext) =>
     input.filename.toLowerCase().endsWith(ext),
   );
 
@@ -37,7 +37,8 @@ export async function parseCvUseCase(
     throw new CvImportValidationError(`Unsupported file type. Upload a PDF or DOCX file.`);
   }
 
-  const isPdf = input.mimetype === 'application/pdf' || input.filename.toLowerCase().endsWith('.pdf');
+  const isPdf =
+    input.mimetype === 'application/pdf' || input.filename.toLowerCase().endsWith('.pdf');
 
   let cvText: string;
   try {
@@ -50,7 +51,9 @@ export async function parseCvUseCase(
   }
 
   if (!cvText.trim()) {
-    throw new CvImportValidationError('No readable text found in the file. Try a different format.');
+    throw new CvImportValidationError(
+      'No readable text found in the file. Try a different format.',
+    );
   }
 
   return provider.parseCv(cvText);

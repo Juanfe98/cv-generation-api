@@ -15,10 +15,7 @@ export async function improveTextUseCase(
   rawInput: unknown,
   deps: ImproveTextDeps = {},
 ): Promise<ImproveTextResult> {
-  const {
-    buildPrompt = buildImproveTextPrompt,
-    normalize = normalizeSuggestions,
-  } = deps;
+  const { buildPrompt = buildImproveTextPrompt, normalize = normalizeSuggestions } = deps;
 
   const parsed = improveTextRequestSchema.safeParse(rawInput);
   if (!parsed.success) {

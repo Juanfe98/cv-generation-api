@@ -6,7 +6,10 @@ export class CvImportValidationError extends Error {
 }
 
 export class CvImportExtractionError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown,
+  ) {
     super(message);
     this.name = 'CvImportExtractionError';
   }

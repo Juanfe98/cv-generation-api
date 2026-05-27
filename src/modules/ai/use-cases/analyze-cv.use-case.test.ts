@@ -27,21 +27,19 @@ describe('analyzeCvUseCase — input validation', () => {
   });
 
   it('throws AiValidationError when cv is not an object', async () => {
-    await expect(
-      analyzeCvUseCase(new MockAIProvider(), { cv: 'not an object' }),
-    ).rejects.toThrow(AiValidationError);
+    await expect(analyzeCvUseCase(new MockAIProvider(), { cv: 'not an object' })).rejects.toThrow(
+      AiValidationError,
+    );
   });
 
   it('throws AiValidationError when input is null', async () => {
-    await expect(
-      analyzeCvUseCase(new MockAIProvider(), null),
-    ).rejects.toThrow(AiValidationError);
+    await expect(analyzeCvUseCase(new MockAIProvider(), null)).rejects.toThrow(AiValidationError);
   });
 
   it('throws AiValidationError when input is not an object', async () => {
-    await expect(
-      analyzeCvUseCase(new MockAIProvider(), 'string'),
-    ).rejects.toThrow(AiValidationError);
+    await expect(analyzeCvUseCase(new MockAIProvider(), 'string')).rejects.toThrow(
+      AiValidationError,
+    );
   });
 
   it('throws AiValidationError when targetRole exceeds max length', async () => {
@@ -51,9 +49,9 @@ describe('analyzeCvUseCase — input validation', () => {
   });
 
   it('accepts cv as empty object', async () => {
-    await expect(
-      analyzeCvUseCase(new MockAIProvider(), { cv: {} }),
-    ).resolves.toHaveProperty('score');
+    await expect(analyzeCvUseCase(new MockAIProvider(), { cv: {} })).resolves.toHaveProperty(
+      'score',
+    );
   });
 
   it('accepts input without targetRole', async () => {
@@ -113,9 +111,7 @@ describe('analyzeCvUseCase — provider integration', () => {
       parseCv: jest.fn(),
     };
 
-    await expect(
-      analyzeCvUseCase(failingProvider, VALID_INPUT),
-    ).rejects.toThrow('provider down');
+    await expect(analyzeCvUseCase(failingProvider, VALID_INPUT)).rejects.toThrow('provider down');
   });
 });
 
@@ -156,15 +152,13 @@ describe('analyzeCvUseCase — normalization', () => {
 
   it('throws AiNormalizationError when provider returns no score', async () => {
     const provider: AIProvider = {
-      analyzeCv: async () => ({ strengths: [], improvements: [] } as never),
+      analyzeCv: async () => ({ strengths: [], improvements: [] }) as never,
       generateExperienceBullets: jest.fn(),
       improveText: jest.fn(),
       parseCv: jest.fn(),
     };
 
-    await expect(
-      analyzeCvUseCase(provider, VALID_INPUT),
-    ).rejects.toThrow(AiNormalizationError);
+    await expect(analyzeCvUseCase(provider, VALID_INPUT)).rejects.toThrow(AiNormalizationError);
   });
 
   it('throws AiNormalizationError when provider returns non-object', async () => {
@@ -175,9 +169,7 @@ describe('analyzeCvUseCase — normalization', () => {
       parseCv: jest.fn(),
     };
 
-    await expect(
-      analyzeCvUseCase(provider, VALID_INPUT),
-    ).rejects.toThrow(AiNormalizationError);
+    await expect(analyzeCvUseCase(provider, VALID_INPUT)).rejects.toThrow(AiNormalizationError);
   });
 
   it('filters out invalid improvements missing priority', async () => {

@@ -63,7 +63,9 @@ export type Tone = z.infer<typeof toneSchema>;
 export type CvSection = z.infer<typeof cvSectionSchema>;
 export type Priority = z.infer<typeof prioritySchema>;
 
-export type GenerateExperienceBulletsRequest = z.infer<typeof generateExperienceBulletsRequestSchema>;
+export type GenerateExperienceBulletsRequest = z.infer<
+  typeof generateExperienceBulletsRequestSchema
+>;
 export type ImproveTextRequest = z.infer<typeof improveTextRequestSchema>;
 export type AnalyzeCvRequest = z.infer<typeof analyzeCvRequestSchema>;
 

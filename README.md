@@ -26,26 +26,28 @@ For local development `AI_PROVIDER=mock` is the default — no Gemini key requir
 
 ## Environment variables
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `PORT` | No | `3000` | Port the server listens on |
-| `NODE_ENV` | No | `development` | `development` \| `production` \| `test` |
-| `AI_PROVIDER` | No | `mock` (dev), `gemini` (prod) | Which AI backend to use |
-| `GEMINI_API_KEY` | When `AI_PROVIDER=gemini` | — | Google Gemini API key |
-| `CORS_ORIGIN` | No | `http://localhost:5173` (dev), none (prod) | Allowed browser origin |
-| `RATE_LIMIT_MAX` | No | `60` | Max requests per window per IP on `/api/ai/*` |
-| `RATE_LIMIT_WINDOW` | No | `60000` | Rate limit window in milliseconds |
+| Variable             | Required                      | Default                                    | Description                                   |
+| -------------------- | ----------------------------- | ------------------------------------------ | --------------------------------------------- |
+| `PORT`               | No                            | `3000`                                     | Port the server listens on                    |
+| `NODE_ENV`           | No                            | `development`                              | `development` \| `production` \| `test`       |
+| `AI_PROVIDER`        | No                            | `mock` (dev), `gemini` (prod)              | `mock` \| `gemini` \| `openrouter`            |
+| `GEMINI_API_KEY`     | When `AI_PROVIDER=gemini`     | —                                          | Google Gemini API key                         |
+| `OPENROUTER_API_KEY` | When `AI_PROVIDER=openrouter` | —                                          | OpenRouter API key                            |
+| `OPENROUTER_MODEL`   | No                            | `deepseek/deepseek-chat:free`              | OpenRouter model id                           |
+| `CORS_ORIGIN`        | No                            | `http://localhost:5173` (dev), none (prod) | Allowed browser origin                        |
+| `RATE_LIMIT_MAX`     | No                            | `60`                                       | Max requests per window per IP on `/api/ai/*` |
+| `RATE_LIMIT_WINDOW`  | No                            | `60000`                                    | Rate limit window in milliseconds             |
 
 > **Production note:** `CORS_ORIGIN` has no default in production. If unset, cross-origin browser requests are blocked. Always set it to your Vercel frontend URL.
 
 ## Scripts
 
-| Script | Description |
-|---|---|
-| `npm run dev` | Start with hot-reload (ts-node-dev) |
+| Script          | Description                                  |
+| --------------- | -------------------------------------------- |
+| `npm run dev`   | Start with hot-reload (ts-node-dev)          |
 | `npm run build` | Compile TypeScript to `dist/` (cleans first) |
-| `npm start` | Run compiled output — use after `build` |
-| `npm test` | Run test suite |
+| `npm start`     | Run compiled output — use after `build`      |
+| `npm test`      | Run test suite                               |
 
 ## API endpoints
 
@@ -137,16 +139,16 @@ All endpoints return errors in this shape:
 }
 ```
 
-| HTTP | Code | Cause |
-|---|---|---|
-| 400 | `AI_VALIDATION_ERROR` | Invalid or missing request fields |
-| 413 | — | Request body exceeds 256 KB |
-| 429 | `RATE_LIMIT_EXCEEDED` | Too many requests from this IP |
-| 503 | `AI_PROVIDER_ERROR` | Gemini API unavailable or timed out |
-| 503 | `AI_GENERATION_FAILED` | Model returned empty response |
-| 503 | `AI_NORMALIZATION_ERROR` | Model returned unparseable output |
-| 503 | `AI_CONFIGURATION_ERROR` | Missing required env var (e.g. `GEMINI_API_KEY`) |
-| 500 | `INTERNAL_ERROR` | Unexpected server error |
+| HTTP | Code                     | Cause                                            |
+| ---- | ------------------------ | ------------------------------------------------ |
+| 400  | `AI_VALIDATION_ERROR`    | Invalid or missing request fields                |
+| 413  | —                        | Request body exceeds 256 KB                      |
+| 429  | `RATE_LIMIT_EXCEEDED`    | Too many requests from this IP                   |
+| 503  | `AI_PROVIDER_ERROR`      | Gemini API unavailable or timed out              |
+| 503  | `AI_GENERATION_FAILED`   | Model returned empty response                    |
+| 503  | `AI_NORMALIZATION_ERROR` | Model returned unparseable output                |
+| 503  | `AI_CONFIGURATION_ERROR` | Missing required env var (e.g. `GEMINI_API_KEY`) |
+| 500  | `INTERNAL_ERROR`         | Unexpected server error                          |
 
 ## Deployment
 
@@ -181,7 +183,7 @@ Use that variable when constructing API calls instead of hardcoding the URL.
 
 - [ ] `NODE_ENV` set to `production`
 - [ ] `AI_PROVIDER` set to `gemini`
-- [ ] `GEMINI_API_KEY` set to a valid Gemini API key
+- [ ] Provider API key set (`GEMINI_API_KEY` for Gemini or `OPENROUTER_API_KEY` for OpenRouter)
 - [ ] `CORS_ORIGIN` set to the Vercel frontend URL (e.g. `https://cv-builder.vercel.app`)
 - [ ] Health check at `/health` returns `200`
 - [ ] At least one `/api/ai/*` endpoint returns a valid response

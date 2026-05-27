@@ -76,7 +76,10 @@ describe('buildGenerateExperienceBulletsPrompt', () => {
     });
 
     it('includes seniority when provided', () => {
-      const prompt = buildGenerateExperienceBulletsPrompt({ role: 'Engineer', seniority: 'Senior' });
+      const prompt = buildGenerateExperienceBulletsPrompt({
+        role: 'Engineer',
+        seniority: 'Senior',
+      });
       expect(prompt).toContain('Seniority: Senior');
     });
 

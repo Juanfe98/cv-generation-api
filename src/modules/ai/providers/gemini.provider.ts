@@ -35,11 +35,15 @@ function extractModelText(body: unknown): string {
   return text;
 }
 
+export interface GeminiAIProviderOptions {
+  apiKey?: string;
+}
+
 export class GeminiAIProvider implements AIProvider {
   private readonly apiKey: string;
 
-  constructor() {
-    const key = process.env.GEMINI_API_KEY;
+  constructor(options: GeminiAIProviderOptions = {}) {
+    const key = options.apiKey ?? process.env.GEMINI_API_KEY;
     if (!key) {
       throw new AiConfigurationError(
         'GEMINI_API_KEY is not set. Set this environment variable to use the Gemini provider.',
@@ -83,7 +87,9 @@ export class GeminiAIProvider implements AIProvider {
   ): Promise<GenerateExperienceBulletsResult> {
     const prompt = buildGenerateExperienceBulletsPrompt(input);
     const raw = (await this.callGemini(prompt)) as { suggestions?: unknown[] };
-    return { suggestions: (raw.suggestions ?? []) as GenerateExperienceBulletsResult['suggestions'] };
+    return {
+      suggestions: (raw.suggestions ?? []) as GenerateExperienceBulletsResult['suggestions'],
+    };
   }
 
   async improveText(input: ImproveTextInput): Promise<ImproveTextResult> {

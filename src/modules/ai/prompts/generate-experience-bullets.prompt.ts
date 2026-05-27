@@ -7,17 +7,20 @@ const OUTPUT_FORMAT = `Return only valid JSON. No markdown. No code fences. No t
   ]
 }`;
 
-export function buildGenerateExperienceBulletsPrompt(input: GenerateExperienceBulletsInput): string {
+export function buildGenerateExperienceBulletsPrompt(
+  input: GenerateExperienceBulletsInput,
+): string {
   const contextLines = [
     `Role: ${input.role}`,
-    input.company       ? `Company: ${input.company}`                          : '',
-    input.seniority     ? `Seniority: ${input.seniority}`                      : '',
-    input.technologies?.length
-                        ? `Technologies: ${input.technologies.join(', ')}`      : '',
-    input.responsibilities ? `Responsibilities: ${input.responsibilities}`      : '',
-    input.targetRole    ? `Target role: ${input.targetRole}`                   : '',
-    input.tone          ? `Tone: ${input.tone}`                                : '',
-  ].filter(Boolean).join('\n');
+    input.company ? `Company: ${input.company}` : '',
+    input.seniority ? `Seniority: ${input.seniority}` : '',
+    input.technologies?.length ? `Technologies: ${input.technologies.join(', ')}` : '',
+    input.responsibilities ? `Responsibilities: ${input.responsibilities}` : '',
+    input.targetRole ? `Target role: ${input.targetRole}` : '',
+    input.tone ? `Tone: ${input.tone}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return `You are a professional CV writer. Generate 3 to 5 experience bullet suggestions for the context below.
 

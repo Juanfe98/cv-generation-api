@@ -15,7 +15,9 @@ export function buildImproveTextPrompt(input: ImproveTextInput): string {
     `Tone: ${tone}`,
     input.targetRole ? `Target role: ${input.targetRole}` : '',
     `Text: ${input.text}`,
-  ].filter(Boolean).join('\n');
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return `You are a professional CV editor. Rewrite the text below and return 2 to 3 improved alternatives.
 

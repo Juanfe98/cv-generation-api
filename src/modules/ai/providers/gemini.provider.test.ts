@@ -47,7 +47,9 @@ describe('GeminiAIProvider — constructor', () => {
 describe('GeminiAIProvider — callGemini', () => {
   it('throws AiProviderError when httpsPost rejects with a network error', async () => {
     const provider = makeProvider();
-    jest.spyOn(provider, 'callGemini').mockRejectedValue(new AiProviderError('Gemini request failed'));
+    jest
+      .spyOn(provider, 'callGemini')
+      .mockRejectedValue(new AiProviderError('Gemini request failed'));
 
     await expect(provider.callGemini('any prompt')).rejects.toThrow(AiProviderError);
   });
@@ -77,8 +79,14 @@ describe('GeminiAIProvider — generateExperienceBullets', () => {
     const provider = makeProvider();
     jest.spyOn(provider, 'callGemini').mockResolvedValue({
       suggestions: [
-        { text: 'Led backend API redesign, reducing average response time by 40%.', reason: 'Impact-focused.' },
-        { text: 'Delivered microservices migration for Acme, enabling independent deployments.', reason: 'Shows ownership.' },
+        {
+          text: 'Led backend API redesign, reducing average response time by 40%.',
+          reason: 'Impact-focused.',
+        },
+        {
+          text: 'Delivered microservices migration for Acme, enabling independent deployments.',
+          reason: 'Shows ownership.',
+        },
       ],
     });
 
@@ -86,7 +94,9 @@ describe('GeminiAIProvider — generateExperienceBullets', () => {
 
     expect(result).toHaveProperty('suggestions');
     expect(result.suggestions).toHaveLength(2);
-    expect(result.suggestions[0].text).toBe('Led backend API redesign, reducing average response time by 40%.');
+    expect(result.suggestions[0].text).toBe(
+      'Led backend API redesign, reducing average response time by 40%.',
+    );
   });
 
   it('returns empty suggestions array when Gemini returns no suggestions key', async () => {
@@ -102,7 +112,9 @@ describe('GeminiAIProvider — generateExperienceBullets', () => {
     const provider = makeProvider();
     jest.spyOn(provider, 'callGemini').mockRejectedValue(new AiProviderError('timeout'));
 
-    await expect(provider.generateExperienceBullets(VALID_BULLETS_INPUT)).rejects.toThrow(AiProviderError);
+    await expect(provider.generateExperienceBullets(VALID_BULLETS_INPUT)).rejects.toThrow(
+      AiProviderError,
+    );
   });
 
   it('builds prompt with role and company', async () => {
@@ -123,8 +135,14 @@ describe('GeminiAIProvider — improveText', () => {
     const provider = makeProvider();
     jest.spyOn(provider, 'callGemini').mockResolvedValue({
       suggestions: [
-        { text: 'Owned backend services, delivering features on schedule.', reason: 'Removes passive phrasing.' },
-        { text: 'Maintained backend services, achieving 99.9% uptime across production.', reason: 'Adds measurable outcome.' },
+        {
+          text: 'Owned backend services, delivering features on schedule.',
+          reason: 'Removes passive phrasing.',
+        },
+        {
+          text: 'Maintained backend services, achieving 99.9% uptime across production.',
+          reason: 'Adds measurable outcome.',
+        },
       ],
     });
 
@@ -147,7 +165,9 @@ describe('GeminiAIProvider — improveText', () => {
 
   it('forwards AiProviderError from callGemini', async () => {
     const provider = makeProvider();
-    jest.spyOn(provider, 'callGemini').mockRejectedValue(new AiProviderError('Gemini request failed'));
+    jest
+      .spyOn(provider, 'callGemini')
+      .mockRejectedValue(new AiProviderError('Gemini request failed'));
 
     await expect(provider.improveText(VALID_IMPROVE_INPUT)).rejects.toThrow(AiProviderError);
   });

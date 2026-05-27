@@ -1,3 +1,4 @@
+import { env } from '../../../config/env';
 import { httpsPost, HttpError } from '../../../lib/http';
 import type { AIProvider } from './ai-provider';
 import type {
@@ -26,23 +27,29 @@ type OpenRouterResponse = {
   }>;
 };
 
+export interface OpenRouterAIProviderOptions {
+  apiKey?: string;
+  model?: string;
+  referer?: string;
+}
+
 export class OpenRouterAIProvider implements AIProvider {
   private readonly apiKey: string;
   private readonly model: string;
   private readonly headers: Record<string, string>;
 
-  constructor() {
-    const key = process.env.OPENROUTER_API_KEY;
+  constructor(options: OpenRouterAIProviderOptions = {}) {
+    const key = options.apiKey ?? process.env.OPENROUTER_API_KEY;
     if (!key) {
       throw new AiConfigurationError(
         'OPENROUTER_API_KEY is not set. Set this environment variable to use the OpenRouter provider.',
       );
     }
     this.apiKey = key;
-    this.model = process.env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
+    this.model = options.model ?? env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
     this.headers = {
       Authorization: `Bearer ${this.apiKey}`,
-      'HTTP-Referer': process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+      'HTTP-Referer': options.referer ?? (env.CORS_ORIGIN || 'http://localhost:5173'),
       'X-Title': 'CV Builder',
     };
   }
@@ -59,7 +66,10 @@ export class OpenRouterAIProvider implements AIProvider {
       apiResponse = await httpsPost(OPENROUTER_API_URL, payload, DEFAULT_TIMEOUT_MS, this.headers);
     } catch (err) {
       if (err instanceof Error && err.message.includes('timed out')) {
-        throw new AiProviderError(`OpenRouter request timed out after ${DEFAULT_TIMEOUT_MS / 1000}s`, err);
+        throw new AiProviderError(
+          `OpenRouter request timed out after ${DEFAULT_TIMEOUT_MS / 1000}s`,
+          err,
+        );
       }
       if (err instanceof HttpError) {
         throw new AiProviderError(`OpenRouter API error: ${err.message}`, err);
@@ -86,7 +96,9 @@ export class OpenRouterAIProvider implements AIProvider {
   ): Promise<GenerateExperienceBulletsResult> {
     const prompt = buildGenerateExperienceBulletsPrompt(input);
     const raw = (await this.callOpenRouter(prompt)) as { suggestions?: unknown[] };
-    return { suggestions: (raw.suggestions ?? []) as GenerateExperienceBulletsResult['suggestions'] };
+    return {
+      suggestions: (raw.suggestions ?? []) as GenerateExperienceBulletsResult['suggestions'],
+    };
   }
 
   async improveText(input: ImproveTextInput): Promise<ImproveTextResult> {

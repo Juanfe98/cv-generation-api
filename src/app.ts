@@ -1,15 +1,19 @@
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import sensible from '@fastify/sensible';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { env } from './config/env';
+import { createAppDependencies, type AppDependencies } from './app.dependencies';
 import { healthRoutes } from './routes/health.routes';
 import { aiRoutes } from './routes/ai.routes';
 import { cvImportRoutes } from './routes/cv-import.routes';
 
 const BODY_LIMIT_BYTES = 256 * 1024; // 256 KB — sufficient for CV text payloads
 
-export async function buildApp(): Promise<FastifyInstance> {
+export async function buildApp(
+  dependencies: AppDependencies = createAppDependencies(),
+): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: env.NODE_ENV === 'test' ? 'silent' : 'info',
@@ -53,8 +57,8 @@ export async function buildApp(): Promise<FastifyInstance> {
         }),
       });
     }
-    await scope.register(aiRoutes);
-    await scope.register(cvImportRoutes);
+    await scope.register(aiRoutes, { provider: dependencies.aiProvider });
+    await scope.register(cvImportRoutes, { provider: dependencies.aiProvider });
   });
 
   return app;

@@ -1,4 +1,3 @@
-import { createAIProvider } from './providers/provider-factory';
 import type { AIProvider } from './providers/ai-provider';
 import type {
   AnalyzeCvInput,
@@ -16,8 +15,8 @@ import { AiProviderError, isAiError } from './ai.errors';
 export class AiService {
   private readonly provider: AIProvider;
 
-  constructor(provider?: AIProvider) {
-    this.provider = provider ?? createAIProvider();
+  constructor(provider: AIProvider) {
+    this.provider = provider;
   }
 
   async generateExperienceBullets(

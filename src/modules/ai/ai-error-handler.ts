@@ -32,13 +32,20 @@ export function toErrorResponse(err: unknown): { statusCode: number; body: Error
   if (err instanceof AiNormalizationError) {
     return {
       statusCode: 503,
-      body: { error: { code: 'AI_NORMALIZATION_ERROR', message: 'AI service returned unusable output' } },
+      body: {
+        error: { code: 'AI_NORMALIZATION_ERROR', message: 'AI service returned unusable output' },
+      },
     };
   }
   if (err instanceof AiGenerationFailedError) {
     return {
       statusCode: 503,
-      body: { error: { code: 'AI_GENERATION_FAILED', message: 'AI service failed to generate a response' } },
+      body: {
+        error: {
+          code: 'AI_GENERATION_FAILED',
+          message: 'AI service failed to generate a response',
+        },
+      },
     };
   }
   if (err instanceof AiProviderError || err instanceof AiNotImplementedError) {
@@ -50,7 +57,12 @@ export function toErrorResponse(err: unknown): { statusCode: number; body: Error
   if (err instanceof AiConfigurationError) {
     return {
       statusCode: 503,
-      body: { error: { code: 'AI_CONFIGURATION_ERROR', message: 'AI service is not configured correctly' } },
+      body: {
+        error: {
+          code: 'AI_CONFIGURATION_ERROR',
+          message: 'AI service is not configured correctly',
+        },
+      },
     };
   }
   return {
@@ -70,9 +82,12 @@ export function logAiError(log: AiLogger, context: AiErrorContext, err: unknown)
     errorType: err instanceof Error ? err.constructor.name : 'UnknownError',
     // Safe to log message for typed AI errors. For unknown errors in production,
     // avoid leaking internal details (framework messages, DB errors, etc.).
-    errorMessage: isAiError(err) || !isProduction
-      ? (err instanceof Error ? err.message : String(err))
-      : 'Unhandled error',
+    errorMessage:
+      isAiError(err) || !isProduction
+        ? err instanceof Error
+          ? err.message
+          : String(err)
+        : 'Unhandled error',
     // Stack traces only outside production to avoid leaking internals.
     ...(isProduction ? {} : { stack: err instanceof Error ? err.stack : undefined }),
   };

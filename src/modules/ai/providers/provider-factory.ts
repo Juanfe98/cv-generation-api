@@ -15,7 +15,7 @@ export type { AIProviderName };
  * Pass `override` only in tests — never in route or use-case code.
  */
 export function createAIProvider(override?: AIProviderName): AIProvider {
-  const name: AIProviderName = override ?? env.AI_PROVIDER;
+  const name: AIProviderName = override ?? (env.NODE_ENV === 'test' ? 'mock' : env.AI_PROVIDER);
 
   switch (name) {
     case 'mock':

@@ -15,10 +15,7 @@ export async function analyzeCvUseCase(
   rawInput: unknown,
   deps: AnalyzeCvDeps = {},
 ): Promise<AnalyzeCvResult> {
-  const {
-    buildPrompt = buildAnalyzeCvPrompt,
-    normalize = normalizeAnalysis,
-  } = deps;
+  const { buildPrompt = buildAnalyzeCvPrompt, normalize = normalizeAnalysis } = deps;
 
   const parsed = analyzeCvRequestSchema.safeParse(rawInput);
   if (!parsed.success) {

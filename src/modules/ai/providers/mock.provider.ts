@@ -20,11 +20,13 @@ export class MockAIProvider implements AIProvider {
       suggestions: [
         {
           text: `Led the design and delivery of core ${role} features at ${company}, reducing time-to-production by 35% through process improvements and close collaboration with product and QA teams.`,
-          reason: 'Opens with ownership, names the role and company, and quantifies business impact.',
+          reason:
+            'Opens with ownership, names the role and company, and quantifies business impact.',
         },
         {
           text: `Mentored 3 junior engineers and ran bi-weekly technical reviews, raising team code quality scores from 62% to 89% over two quarters.`,
-          reason: 'Highlights leadership and measurable quality improvement with a before/after metric.',
+          reason:
+            'Highlights leadership and measurable quality improvement with a before/after metric.',
         },
         {
           text: `Refactored the legacy data pipeline to an event-driven architecture, cutting average processing time from 8 minutes to under 40 seconds and eliminating a recurring class of production incidents.`,
@@ -39,7 +41,8 @@ export class MockAIProvider implements AIProvider {
       summary: [
         {
           text: `Results-driven ${input.targetRole ?? 'software engineer'} with a track record of delivering scalable systems and cross-functional collaboration. Passionate about clean architecture and measurable business outcomes.`,
-          reason: 'Leads with value proposition, avoids filler phrases, and ends with a specific focus area.',
+          reason:
+            'Leads with value proposition, avoids filler phrases, and ends with a specific focus area.',
         },
         {
           text: `${input.targetRole ?? 'Engineer'} specialising in building reliable, high-throughput systems. Known for translating complex requirements into clear technical plans and shipping with quality.`,
@@ -49,14 +52,18 @@ export class MockAIProvider implements AIProvider {
       experience: [
         {
           text: input.text.replace(/^(i |we )/i, '').replace(/responsible for/i, 'owned'),
-          reason: 'Removes first-person language and replaces passive phrasing with an action verb.',
+          reason:
+            'Removes first-person language and replaces passive phrasing with an action verb.',
         },
         {
           text: `${input.text.trim()} — delivered on time and within scope, contributing to a 20% improvement in team velocity.`,
           reason: 'Appends a business outcome to anchor the statement with measurable impact.',
         },
         {
-          text: input.text.charAt(0).toUpperCase() + input.text.slice(1).replace(/\.$/, '') + ', resulting in improved reliability and reduced on-call burden.',
+          text:
+            input.text.charAt(0).toUpperCase() +
+            input.text.slice(1).replace(/\.$/, '') +
+            ', resulting in improved reliability and reduced on-call burden.',
           reason: 'Adds a consequence that signals operational maturity.',
         },
       ],
@@ -72,11 +79,15 @@ export class MockAIProvider implements AIProvider {
       ],
       education: [
         {
-          text: input.text.trim() + ' Graduated with distinction; coursework focused on distributed systems and software design.',
+          text:
+            input.text.trim() +
+            ' Graduated with distinction; coursework focused on distributed systems and software design.',
           reason: 'Adds academic context and relevant specialisation to a bare education entry.',
         },
         {
-          text: input.text.trim() + ' Completed final-year project on machine learning pipelines, earning highest departmental grade.',
+          text:
+            input.text.trim() +
+            ' Completed final-year project on machine learning pipelines, earning highest departmental grade.',
           reason: 'Anchors the entry with a standout achievement relevant to technical roles.',
         },
       ],
@@ -103,7 +114,8 @@ export class MockAIProvider implements AIProvider {
       email: 'jane.doe@example.com',
       phone: '+1 555 000 1234',
       location: 'San Francisco, CA',
-      summary: 'Senior Software Engineer with 8 years of experience building scalable web applications.',
+      summary:
+        'Senior Software Engineer with 8 years of experience building scalable web applications.',
       experience: [
         {
           company: 'Acme Corp',
@@ -122,9 +134,7 @@ export class MockAIProvider implements AIProvider {
           startDate: '2017-06',
           endDate: '2020-02',
           current: false,
-          highlights: [
-            'Built the core API serving 1M+ daily requests',
-          ],
+          highlights: ['Built the core API serving 1M+ daily requests'],
         },
       ],
       education: [
@@ -141,9 +151,7 @@ export class MockAIProvider implements AIProvider {
         { name: 'English', level: 'Native' },
         { name: 'Spanish', level: 'Conversational' },
       ],
-      certifications: [
-        { name: 'AWS Solutions Architect', issuer: 'Amazon', date: '2022-04' },
-      ],
+      certifications: [{ name: 'AWS Solutions Architect', issuer: 'Amazon', date: '2022-04' }],
     };
   }
 
@@ -165,22 +173,26 @@ export class MockAIProvider implements AIProvider {
         },
         {
           section: 'experience',
-          message: 'Several bullets start with passive phrases ("responsible for", "involved in"). Replace each with an action verb and add a measurable result.',
+          message:
+            'Several bullets start with passive phrases ("responsible for", "involved in"). Replace each with an action verb and add a measurable result.',
           priority: 'high',
         },
         {
           section: 'skills',
-          message: 'Skills are listed as a flat block. Group them by category (Languages, Frameworks, Tools, Platforms) to improve scannability.',
+          message:
+            'Skills are listed as a flat block. Group them by category (Languages, Frameworks, Tools, Platforms) to improve scannability.',
           priority: 'medium',
         },
         {
           section: 'experience',
-          message: 'Only one role includes a quantified metric. Aim for at least one number per bullet (%, time saved, team size, scale).',
+          message:
+            'Only one role includes a quantified metric. Aim for at least one number per bullet (%, time saved, team size, scale).',
           priority: 'medium',
         },
         {
           section: 'education',
-          message: 'If you graduated within the last 5 years, move education below experience. Otherwise, consider removing GPA if not above 3.7.',
+          message:
+            'If you graduated within the last 5 years, move education below experience. Otherwise, consider removing GPA if not above 3.7.',
           priority: 'low',
         },
       ],

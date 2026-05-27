@@ -24,9 +24,7 @@ function toValidReason(value: unknown): string | undefined {
   return trimmed ? trimmed.slice(0, MAX_REASON_LENGTH) : undefined;
 }
 
-export function normalizeSuggestions(
-  items: ReadonlyArray<RawSuggestion>,
-): SuggestionsResponse {
+export function normalizeSuggestions(items: ReadonlyArray<RawSuggestion>): SuggestionsResponse {
   const valid: Array<{ text: string; reason?: string }> = [];
 
   for (const item of items) {

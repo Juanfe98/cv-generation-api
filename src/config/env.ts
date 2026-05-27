@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { z } from 'zod';
 import type { AIProviderName } from '../modules/ai/ai.types';
 
 type NodeEnv = 'development' | 'production' | 'test';
@@ -7,26 +8,31 @@ interface EnvConfig {
   PORT: number;
   NODE_ENV: NodeEnv;
   AI_PROVIDER: AIProviderName;
+  GEMINI_API_KEY?: string;
+  OPENROUTER_API_KEY?: string;
+  OPENROUTER_MODEL: string;
   CORS_ORIGIN: string | false;
   RATE_LIMIT_MAX: number;
   RATE_LIMIT_WINDOW: number;
 }
 
-function getNodeEnv(value: string | undefined): NodeEnv {
-  if (value === 'production' || value === 'test') return value;
-  return 'development';
-}
+const nodeEnvSchema = z.enum(['development', 'production', 'test']).catch('development');
+const aiProviderSchema = z.enum(['mock', 'gemini', 'openrouter']);
 
-const VALID_AI_PROVIDERS: AIProviderName[] = ['mock', 'gemini', 'openrouter'];
+const rawEnvSchema = z.object({
+  PORT: z.coerce.number().int().positive().catch(3000),
+  NODE_ENV: nodeEnvSchema,
+  AI_PROVIDER: aiProviderSchema.optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  OPENROUTER_API_KEY: z.string().min(1).optional(),
+  OPENROUTER_MODEL: z.string().min(1).catch('deepseek/deepseek-chat:free'),
+  CORS_ORIGIN: z.string().min(1).optional(),
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().catch(60),
+  RATE_LIMIT_WINDOW: z.coerce.number().int().positive().catch(60_000),
+});
 
-function getAIProvider(value: string | undefined, nodeEnv: NodeEnv): AIProviderName {
-  if (value === undefined || value === '') {
-    return nodeEnv === 'production' ? 'gemini' : 'mock';
-  }
-  if (value === 'mock' || value === 'gemini' || value === 'openrouter') return value;
-  throw new Error(
-    `Invalid AI_PROVIDER: "${value}". Valid values: ${VALID_AI_PROVIDERS.join(', ')}.`,
-  );
+function getDefaultProvider(nodeEnv: NodeEnv): AIProviderName {
+  return nodeEnv === 'production' ? 'gemini' : 'mock';
 }
 
 function getCorsOrigin(value: string | undefined, nodeEnv: NodeEnv): string | false {
@@ -36,20 +42,16 @@ function getCorsOrigin(value: string | undefined, nodeEnv: NodeEnv): string | fa
   return 'http://localhost:5173';
 }
 
-function getPositiveInt(value: string | undefined, defaultValue: number): number {
-  if (!value) return defaultValue;
-  const parsed = parseInt(value, 10);
-  if (!isFinite(parsed) || parsed <= 0) return defaultValue;
-  return parsed;
-}
-
-const nodeEnv = getNodeEnv(process.env.NODE_ENV);
+const rawEnv = rawEnvSchema.parse(process.env);
 
 export const env: EnvConfig = {
-  PORT: parseInt(process.env.PORT ?? '3000', 10),
-  NODE_ENV: nodeEnv,
-  AI_PROVIDER: getAIProvider(process.env.AI_PROVIDER, nodeEnv),
-  CORS_ORIGIN: getCorsOrigin(process.env.CORS_ORIGIN, nodeEnv),
-  RATE_LIMIT_MAX: getPositiveInt(process.env.RATE_LIMIT_MAX, 60),
-  RATE_LIMIT_WINDOW: getPositiveInt(process.env.RATE_LIMIT_WINDOW, 60_000),
+  PORT: rawEnv.PORT,
+  NODE_ENV: rawEnv.NODE_ENV,
+  AI_PROVIDER: rawEnv.AI_PROVIDER ?? getDefaultProvider(rawEnv.NODE_ENV),
+  GEMINI_API_KEY: rawEnv.GEMINI_API_KEY,
+  OPENROUTER_API_KEY: rawEnv.OPENROUTER_API_KEY,
+  OPENROUTER_MODEL: rawEnv.OPENROUTER_MODEL,
+  CORS_ORIGIN: getCorsOrigin(rawEnv.CORS_ORIGIN, rawEnv.NODE_ENV),
+  RATE_LIMIT_MAX: rawEnv.RATE_LIMIT_MAX,
+  RATE_LIMIT_WINDOW: rawEnv.RATE_LIMIT_WINDOW,
 };

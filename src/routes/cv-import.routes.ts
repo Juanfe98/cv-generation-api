@@ -1,8 +1,11 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify';
 import Busboy from 'busboy';
-import { createAIProvider } from '../modules/ai/providers/provider-factory';
+import type { AIProvider } from '../modules/ai/providers/ai-provider';
 import { parseCvUseCase } from '../modules/cv-import/use-cases/parse-cv.use-case';
-import { CvImportValidationError, CvImportExtractionError } from '../modules/cv-import/cv-import.errors';
+import {
+  CvImportValidationError,
+  CvImportExtractionError,
+} from '../modules/cv-import/cv-import.errors';
 import { toErrorResponse, logAiError } from '../modules/ai/ai-error-handler';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -40,7 +43,14 @@ function parseMultipartBody(rawBody: Buffer, contentType: string): Promise<FileD
   });
 }
 
-export async function cvImportRoutes(app: FastifyInstance): Promise<void> {
+interface CvImportRoutesOptions extends FastifyPluginOptions {
+  provider: AIProvider;
+}
+
+export async function cvImportRoutes(
+  app: FastifyInstance,
+  options: CvImportRoutesOptions,
+): Promise<void> {
   // Scoped content-type parser: reads multipart body as raw buffer (no global plugin needed).
   // The higher bodyLimit here only applies to this scope's routes.
   app.addContentTypeParser(
@@ -49,7 +59,7 @@ export async function cvImportRoutes(app: FastifyInstance): Promise<void> {
     async (_req: FastifyRequest, body: Buffer) => body,
   );
 
-  const provider = createAIProvider();
+  const { provider } = options;
 
   app.post('/api/cv/parse', async (request, reply) => {
     try {
@@ -82,16 +92,21 @@ export async function cvImportRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(422).send({
           error: {
             code: 'CV_IMPORT_EXTRACTION_ERROR',
-            message: 'We had trouble reading your CV. Try a different file or fill in your details manually.',
+            message:
+              'We had trouble reading your CV. Try a different file or fill in your details manually.',
           },
         });
       }
 
-      logAiError(request.log, {
-        endpoint: '/api/cv/parse',
-        useCase: 'parseCv',
-        requestId: request.id,
-      }, err);
+      logAiError(
+        request.log,
+        {
+          endpoint: '/api/cv/parse',
+          useCase: 'parseCv',
+          requestId: request.id,
+        },
+        err,
+      );
       const { statusCode, body } = toErrorResponse(err);
       return reply.status(statusCode).send(body);
     }
