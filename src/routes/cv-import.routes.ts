@@ -6,9 +6,8 @@ import {
   CvImportValidationError,
   CvImportExtractionError,
 } from '../modules/cv-import/cv-import.errors';
+import { CV_IMPORT_MAX_FILE_SIZE_BYTES } from '../modules/cv-import/cv-import.constants';
 import { toErrorResponse, logAiError } from '../modules/ai/ai-error-handler';
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 interface FileData {
   buffer: Buffer;
@@ -17,28 +16,77 @@ interface FileData {
   size: number;
 }
 
+function getHeaderValue(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+}
+
 function parseMultipartBody(rawBody: Buffer, contentType: string): Promise<FileData | null> {
   return new Promise((resolve, reject) => {
-    const bb = Busboy({ headers: { 'content-type': contentType } });
-    let found = false;
+    let settled = false;
+    let fileData: FileData | null = null;
+    let fileCount = 0;
+    let fileTooLarge = false;
+
+    const finishOnce = (callback: () => void): void => {
+      if (settled) return;
+      settled = true;
+      callback();
+    };
+
+    const bb = Busboy({
+      headers: { 'content-type': contentType },
+      limits: {
+        files: 1,
+        fileSize: CV_IMPORT_MAX_FILE_SIZE_BYTES,
+      },
+    });
 
     bb.on('file', (_fieldname, file, info) => {
-      found = true;
+      fileCount += 1;
+
+      // The endpoint accepts exactly one CV file. Rejecting multiple files prevents
+      // ambiguous behavior where the route silently chooses one uploaded document.
+      if (fileCount > 1) {
+        file.resume();
+        finishOnce(() => reject(new CvImportValidationError('Upload exactly one CV file.')));
+        return;
+      }
+
       const chunks: Buffer[] = [];
 
       file.on('data', (chunk: Buffer) => chunks.push(chunk));
-      file.on('end', () => {
-        const buffer = Buffer.concat(chunks);
-        resolve({ buffer, filename: info.filename, mimetype: info.mimeType, size: buffer.length });
+      file.on('limit', () => {
+        fileTooLarge = true;
+        file.resume();
       });
-      file.on('error', reject);
+      file.on('end', () => {
+        if (fileTooLarge) return;
+        const buffer = Buffer.concat(chunks);
+        fileData = {
+          buffer,
+          filename: info.filename,
+          mimetype: info.mimeType,
+          size: buffer.length,
+        };
+      });
+      file.on('error', (err) => finishOnce(() => reject(err)));
+    });
+
+    bb.on('filesLimit', () => {
+      finishOnce(() => reject(new CvImportValidationError('Upload exactly one CV file.')));
     });
 
     bb.on('finish', () => {
-      if (!found) resolve(null);
+      if (fileTooLarge) {
+        finishOnce(() =>
+          reject(new CvImportValidationError('File too large. Maximum size is 5MB.')),
+        );
+        return;
+      }
+      finishOnce(() => resolve(fileData));
     });
 
-    bb.on('error', reject);
+    bb.on('error', (err) => finishOnce(() => reject(err)));
     bb.end(rawBody);
   });
 }
@@ -52,10 +100,10 @@ export async function cvImportRoutes(
   options: CvImportRoutesOptions,
 ): Promise<void> {
   // Scoped content-type parser: reads multipart body as raw buffer (no global plugin needed).
-  // The higher bodyLimit here only applies to this scope's routes.
+  // The extra bytes account for multipart boundaries/headers while Busboy enforces file size.
   app.addContentTypeParser(
     'multipart/form-data',
-    { parseAs: 'buffer', bodyLimit: MAX_FILE_SIZE + 4096 },
+    { parseAs: 'buffer', bodyLimit: CV_IMPORT_MAX_FILE_SIZE_BYTES + 4096 },
     async (_req: FastifyRequest, body: Buffer) => body,
   );
 
@@ -63,7 +111,7 @@ export async function cvImportRoutes(
 
   app.post('/api/cv/parse', async (request, reply) => {
     try {
-      const contentType = request.headers['content-type'] ?? '';
+      const contentType = getHeaderValue(request.headers['content-type']);
 
       if (!contentType.includes('multipart/form-data')) {
         return reply.status(400).send({

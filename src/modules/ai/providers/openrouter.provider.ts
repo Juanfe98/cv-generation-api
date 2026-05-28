@@ -15,7 +15,8 @@ import { buildImproveTextPrompt } from '../prompts/improve-text.prompt';
 import { buildAnalyzeCvPrompt } from '../prompts/analyze-cv.prompt';
 import { normalizeAnalysis } from '../normalizers/normalize-analysis';
 import { buildParseCvPrompt } from '../../cv-import/prompts/parse-cv.prompt';
-import { parseCvResponseSchema, type ParseCvResponse } from '../../cv-import/cv-import.schemas';
+import type { ParseCvResponse } from '../../cv-import/cv-import.schemas';
+import { normalizeParseCvResponse } from '../../cv-import/normalizers/normalize-parse-cv-response';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const DEFAULT_MODEL = 'deepseek/deepseek-chat:free';
@@ -116,10 +117,6 @@ export class OpenRouterAIProvider implements AIProvider {
   async parseCv(cvText: string): Promise<ParseCvResponse> {
     const prompt = buildParseCvPrompt(cvText);
     const raw = await this.callOpenRouter(prompt);
-    const parsed = parseCvResponseSchema.safeParse(raw);
-    if (!parsed.success) {
-      return raw as ParseCvResponse;
-    }
-    return parsed.data;
+    return normalizeParseCvResponse(raw);
   }
 }
