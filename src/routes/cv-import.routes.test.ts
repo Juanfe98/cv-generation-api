@@ -5,6 +5,7 @@ import { extractTextFromPdf } from '../modules/cv-import/extractors/pdf.extracto
 jest.mock('../modules/cv-import/extractors/pdf.extractor');
 
 const mockExtractTextFromPdf = jest.mocked(extractTextFromPdf);
+const AUTH_HEADERS = { 'x-internal-api-key': 'test-internal-api-key' };
 
 function multipartBody(options: {
   boundary: string;
@@ -40,7 +41,12 @@ describe('CV import routes', () => {
   });
 
   it('returns 400 when no multipart file is provided', async () => {
-    const res = await app.inject({ method: 'POST', url: '/api/cv/parse', payload: {} });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/cv/parse',
+      headers: AUTH_HEADERS,
+      payload: {},
+    });
 
     expect(res.statusCode).toBe(400);
     expect(res.json().error.code).toBe('MISSING_FILE');
@@ -51,7 +57,10 @@ describe('CV import routes', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/cv/parse',
-      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      headers: {
+        ...AUTH_HEADERS,
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
       payload: multipartBody({
         boundary,
         filename: 'cv.pdf',
@@ -70,7 +79,10 @@ describe('CV import routes', () => {
     const res = await app.inject({
       method: 'POST',
       url: '/api/cv/parse',
-      headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      headers: {
+        ...AUTH_HEADERS,
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
       payload: multipartBody({
         boundary,
         filename: 'cv.png',

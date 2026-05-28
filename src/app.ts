@@ -5,6 +5,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { env } from './config/env';
 import { createAppDependencies, type AppDependencies } from './app.dependencies';
+import { createInternalApiKeyAuthHook } from './modules/auth/internal-api-key-auth';
 import { healthRoutes } from './routes/health.routes';
 import { aiRoutes } from './routes/ai.routes';
 import { cvImportRoutes } from './routes/cv-import.routes';
@@ -42,8 +43,12 @@ export async function buildApp(
 
   await app.register(healthRoutes);
 
-  // Rate-limited scope for AI and CV import routes — skipped in test to prevent flaky tests.
+  // Protected scope for expensive routes. Auth runs onRequest so unauthorized calls are
+  // rejected before JSON parsing, multipart buffering, file parsing, or AI provider work.
   await app.register(async (scope) => {
+    scope.addHook('onRequest', createInternalApiKeyAuthHook());
+
+    // Rate limiting is skipped in test to prevent flaky tests.
     if (env.NODE_ENV !== 'test') {
       await scope.register(rateLimit, {
         max: env.RATE_LIMIT_MAX,

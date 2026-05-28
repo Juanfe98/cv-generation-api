@@ -1,6 +1,8 @@
 import { buildApp } from '../app';
 import type { FastifyInstance } from 'fastify';
 
+const AUTH_HEADERS = { 'x-internal-api-key': 'test-internal-api-key' };
+
 describe('AI routes', () => {
   let app: FastifyInstance;
 
@@ -27,6 +29,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: { role: 'Backend Engineer', company: 'Acme' },
       });
 
@@ -41,6 +44,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: { role: 'Staff Engineer' },
       });
 
@@ -55,6 +59,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: { company: 'Acme' },
       });
 
@@ -68,6 +73,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: { role: '' },
       });
 
@@ -79,6 +85,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: {},
       });
 
@@ -90,6 +97,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: {
           role: 'DevOps Engineer',
           company: 'Corp',
@@ -113,6 +121,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { text: 'Responsible for backend services.', section: 'experience' },
       });
 
@@ -127,6 +136,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { text: 'Managed deployments.', section: 'experience' },
       });
 
@@ -141,6 +151,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { section: 'experience' },
       });
 
@@ -152,6 +163,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { text: 'Some text.', section: 'hobbies' },
       });
 
@@ -163,6 +175,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { text: 'Some text.' },
       });
 
@@ -174,6 +187,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: {
           text: 'Wrote backend code.',
           section: 'experience',
@@ -193,6 +207,7 @@ describe('AI routes', () => {
         const res = await app.inject({
           method: 'POST',
           url: '/api/ai/improve-text',
+          headers: AUTH_HEADERS,
           payload: { text: 'Sample text.', section },
         });
 
@@ -214,6 +229,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { cv: VALID_CV, targetRole: 'Staff Engineer' },
       });
 
@@ -230,6 +246,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { cv: VALID_CV },
       });
 
@@ -245,6 +262,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { cv: VALID_CV },
       });
 
@@ -255,6 +273,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { targetRole: 'Engineer' },
       });
 
@@ -266,6 +285,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: {},
       });
 
@@ -277,6 +297,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { cv: 'not an object' },
       });
 
@@ -288,6 +309,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: { cv: {}, targetRole: 'x'.repeat(121) },
       });
 
@@ -299,6 +321,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: {},
       });
 
@@ -311,6 +334,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/analyze-cv',
+        headers: AUTH_HEADERS,
         payload: {},
       });
 
@@ -327,6 +351,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/generate-experience-bullets',
+        headers: AUTH_HEADERS,
         payload: {},
       });
 
@@ -342,6 +367,7 @@ describe('AI routes', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: { text: 'x', section: 'invalid-section' },
       });
 
