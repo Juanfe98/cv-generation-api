@@ -61,6 +61,8 @@ Future endpoints should be protected by default if they trigger AI calls, file p
 
 ## Vercel proxy contract
 
+See `docs/vercel-proxy.md` for implementation-oriented Vercel Function examples.
+
 The Vite browser app should call same-origin Vercel Function routes, not the backend directly:
 
 ```ts
@@ -118,9 +120,61 @@ If `INTERNAL_API_KEY` is unset while `NODE_ENV=test`, the backend resolves it to
 test-internal-api-key
 ```
 
+## Observability for failed authentication
+
+Failed internal API authentication attempts are logged with safe metadata only. Example shape:
+
+```json
+{
+  "event": "api_auth_failed",
+  "reason": "missing_api_key",
+  "method": "POST",
+  "url": "/api/cv/parse",
+  "requestId": "req-1"
+}
+```
+
+Possible reasons:
+
+```txt
+missing_api_key
+invalid_api_key
+```
+
+When debugging failed proxy/backend calls:
+
+1. Check backend logs for `event=api_auth_failed`.
+2. Confirm whether the reason is `missing_api_key` or `invalid_api_key`.
+3. Verify the Vercel Function is attaching `x-internal-api-key` server-side.
+4. Verify Vercel `INTERNAL_API_KEY` exactly matches backend `INTERNAL_API_KEY`.
+5. Never print either secret while debugging.
+
+## CORS policy
+
+`CORS_ORIGIN` controls which browser origins may call the backend directly. It supports a single origin or comma-separated origins:
+
+```txt
+CORS_ORIGIN=http://localhost:5173,https://your-frontend.vercel.app
+```
+
+In production, no CORS origin is allowed by default if `CORS_ORIGIN` is unset. This is intentional defense-in-depth. CORS only affects browsers; it does not block `curl`, scripts, Postman, or other servers.
+
+## Rate limiting
+
+Protected backend routes are rate limited after internal API authentication passes:
+
+```txt
+/api/ai/*      → AI_RATE_LIMIT_MAX / AI_RATE_LIMIT_WINDOW
+/api/cv/parse  → CV_PARSE_RATE_LIMIT_MAX / CV_PARSE_RATE_LIMIT_WINDOW
+```
+
+The CV parse limit defaults lower because uploads, file extraction, and parsing are heavier than JSON-only AI actions. If requests come through Vercel Functions, IP-based limits may identify proxy infrastructure rather than individual users; treat this as MVP protection until user auth or edge-level rate limiting exists.
+
 ## Security notes
 
 - Internal API key auth protects the backend from direct public calls.
+- CORS is not a replacement for internal API authentication.
+- Backend rate limiting is not a replacement for frontend/proxy abuse protection.
 - It does not stop abuse of public Vercel Function routes.
 - Until user auth exists, add proxy-layer protections such as rate limiting, bot protection, or CAPTCHA for expensive flows.
 - Never log internal API keys, CV contents, extracted CV text, or AI prompts containing personal data.

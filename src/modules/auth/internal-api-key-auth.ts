@@ -54,6 +54,10 @@ export function createInternalApiKeyAuthHook(expectedKey = env.INTERNAL_API_KEY)
     request: FastifyRequest,
     reply: FastifyReply,
   ): Promise<void> {
+    // Browser preflight requests cannot include custom API-key headers. Keep OPTIONS
+    // unauthenticated so local direct-to-backend development can still pass CORS checks.
+    if (request.method === 'OPTIONS') return;
+
     const receivedKey = getHeaderValue(request.headers[INTERNAL_API_KEY_HEADER]);
 
     if (!receivedKey) {

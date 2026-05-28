@@ -12,9 +12,13 @@ interface EnvConfig {
   GEMINI_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
   OPENROUTER_MODEL: string;
-  CORS_ORIGIN: string | false;
+  CORS_ORIGIN: string | string[] | false;
   RATE_LIMIT_MAX: number;
   RATE_LIMIT_WINDOW: number;
+  AI_RATE_LIMIT_MAX: number;
+  AI_RATE_LIMIT_WINDOW: number;
+  CV_PARSE_RATE_LIMIT_MAX: number;
+  CV_PARSE_RATE_LIMIT_WINDOW: number;
 }
 
 const nodeEnvSchema = z.enum(['development', 'production', 'test']).catch('development');
@@ -31,15 +35,29 @@ const rawEnvSchema = z.object({
   CORS_ORIGIN: z.string().min(1).optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().catch(60),
   RATE_LIMIT_WINDOW: z.coerce.number().int().positive().catch(60_000),
+  AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+  AI_RATE_LIMIT_WINDOW: z.coerce.number().int().positive().optional(),
+  CV_PARSE_RATE_LIMIT_MAX: z.coerce.number().int().positive().optional(),
+  CV_PARSE_RATE_LIMIT_WINDOW: z.coerce.number().int().positive().optional(),
 });
 
 function getDefaultProvider(nodeEnv: NodeEnv): AIProviderName {
   return nodeEnv === 'production' ? 'gemini' : 'mock';
 }
 
-function getCorsOrigin(value: string | undefined, nodeEnv: NodeEnv): string | false {
-  if (value) return value;
-  // Production with no explicit origin = no cross-origin access allowed.
+function getCorsOrigin(value: string | undefined, nodeEnv: NodeEnv): string | string[] | false {
+  if (value) {
+    const origins = value
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+
+    if (origins.length === 1) return origins[0];
+    if (origins.length > 1) return origins;
+  }
+
+  // Production with no explicit origin = no cross-origin browser access allowed.
+  // CORS is defense-in-depth only; internal API auth remains the real backend boundary.
   if (nodeEnv === 'production') return false;
   return 'http://localhost:5173';
 }
@@ -70,4 +88,8 @@ export const env: EnvConfig = {
   CORS_ORIGIN: getCorsOrigin(rawEnv.CORS_ORIGIN, rawEnv.NODE_ENV),
   RATE_LIMIT_MAX: rawEnv.RATE_LIMIT_MAX,
   RATE_LIMIT_WINDOW: rawEnv.RATE_LIMIT_WINDOW,
+  AI_RATE_LIMIT_MAX: rawEnv.AI_RATE_LIMIT_MAX ?? rawEnv.RATE_LIMIT_MAX,
+  AI_RATE_LIMIT_WINDOW: rawEnv.AI_RATE_LIMIT_WINDOW ?? rawEnv.RATE_LIMIT_WINDOW,
+  CV_PARSE_RATE_LIMIT_MAX: rawEnv.CV_PARSE_RATE_LIMIT_MAX ?? 10,
+  CV_PARSE_RATE_LIMIT_WINDOW: rawEnv.CV_PARSE_RATE_LIMIT_WINDOW ?? rawEnv.RATE_LIMIT_WINDOW,
 };

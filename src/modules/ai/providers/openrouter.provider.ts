@@ -22,6 +22,12 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const DEFAULT_MODEL = 'deepseek/deepseek-chat:free';
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+function getDefaultReferer(): string {
+  if (typeof env.CORS_ORIGIN === 'string') return env.CORS_ORIGIN;
+  if (Array.isArray(env.CORS_ORIGIN)) return env.CORS_ORIGIN[0] ?? 'http://localhost:5173';
+  return 'http://localhost:5173';
+}
+
 type OpenRouterResponse = {
   choices?: Array<{
     message?: { content?: unknown };
@@ -50,7 +56,7 @@ export class OpenRouterAIProvider implements AIProvider {
     this.model = options.model ?? env.OPENROUTER_MODEL ?? DEFAULT_MODEL;
     this.headers = {
       Authorization: `Bearer ${this.apiKey}`,
-      'HTTP-Referer': options.referer ?? (env.CORS_ORIGIN || 'http://localhost:5173'),
+      'HTTP-Referer': options.referer ?? getDefaultReferer(),
       'X-Title': 'CV Builder',
     };
   }
