@@ -5,6 +5,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 import { env } from './config/env';
 import { createAppDependencies, type AppDependencies } from './app.dependencies';
+import { createInternalApiKeyAuthHook } from './modules/auth/internal-api-key-auth';
 import { healthRoutes } from './routes/health.routes';
 import { aiRoutes } from './routes/ai.routes';
 import { cvImportRoutes } from './routes/cv-import.routes';
@@ -42,22 +43,45 @@ export async function buildApp(
 
   await app.register(healthRoutes);
 
-  // Rate-limited scope for AI and CV import routes — skipped in test to prevent flaky tests.
+  const rateLimitErrorResponse = () => ({
+    error: {
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests, please try again later',
+    },
+  });
+
+  // Protected AI scope. Auth runs onRequest so unauthorized calls are rejected before
+  // JSON parsing, validation, provider selection, or AI provider work.
   await app.register(async (scope) => {
+    scope.addHook('onRequest', createInternalApiKeyAuthHook());
+
+    // Rate limiting is skipped in test to prevent flaky tests.
     if (env.NODE_ENV !== 'test') {
       await scope.register(rateLimit, {
-        max: env.RATE_LIMIT_MAX,
-        timeWindow: env.RATE_LIMIT_WINDOW,
+        max: env.AI_RATE_LIMIT_MAX,
+        timeWindow: env.AI_RATE_LIMIT_WINDOW,
         keyGenerator: (request) => request.ip,
-        errorResponseBuilder: () => ({
-          error: {
-            code: 'RATE_LIMIT_EXCEEDED',
-            message: 'Too many requests, please try again later',
-          },
-        }),
+        errorResponseBuilder: rateLimitErrorResponse,
       });
     }
+
     await scope.register(aiRoutes, { provider: dependencies.aiProvider });
+  });
+
+  // Protected CV import scope. It has a lower default limit because uploads and parsing are
+  // heavier than JSON-only AI actions and can trigger costly model calls.
+  await app.register(async (scope) => {
+    scope.addHook('onRequest', createInternalApiKeyAuthHook());
+
+    if (env.NODE_ENV !== 'test') {
+      await scope.register(rateLimit, {
+        max: env.CV_PARSE_RATE_LIMIT_MAX,
+        timeWindow: env.CV_PARSE_RATE_LIMIT_WINDOW,
+        keyGenerator: (request) => request.ip,
+        errorResponseBuilder: rateLimitErrorResponse,
+      });
+    }
+
     await scope.register(cvImportRoutes, { provider: dependencies.aiProvider });
   });
 

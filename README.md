@@ -24,21 +24,28 @@ The server starts on `http://localhost:3000` by default.
 
 For local development `AI_PROVIDER=mock` is the default — no Gemini key required.
 
+See `docs/api-auth.md` for the internal API authentication strategy used by the Vite frontend's Vercel Function proxy.
+
 ## Environment variables
 
-| Variable             | Required                      | Default                                    | Description                                   |
-| -------------------- | ----------------------------- | ------------------------------------------ | --------------------------------------------- |
-| `PORT`               | No                            | `3000`                                     | Port the server listens on                    |
-| `NODE_ENV`           | No                            | `development`                              | `development` \| `production` \| `test`       |
-| `AI_PROVIDER`        | No                            | `mock` (dev), `gemini` (prod)              | `mock` \| `gemini` \| `openrouter`            |
-| `GEMINI_API_KEY`     | When `AI_PROVIDER=gemini`     | —                                          | Google Gemini API key                         |
-| `OPENROUTER_API_KEY` | When `AI_PROVIDER=openrouter` | —                                          | OpenRouter API key                            |
-| `OPENROUTER_MODEL`   | No                            | `deepseek/deepseek-chat:free`              | OpenRouter model id                           |
-| `CORS_ORIGIN`        | No                            | `http://localhost:5173` (dev), none (prod) | Allowed browser origin                        |
-| `RATE_LIMIT_MAX`     | No                            | `60`                                       | Max requests per window per IP on `/api/ai/*` |
-| `RATE_LIMIT_WINDOW`  | No                            | `60000`                                    | Rate limit window in milliseconds             |
+| Variable                     | Required                      | Default                                     | Description                                   |
+| ---------------------------- | ----------------------------- | ------------------------------------------- | --------------------------------------------- |
+| `PORT`                       | No                            | `3000`                                      | Port the server listens on                    |
+| `NODE_ENV`                   | No                            | `development`                               | `development` \| `production` \| `test`       |
+| `AI_PROVIDER`                | No                            | `mock` (dev), `gemini` (prod)               | `mock` \| `gemini` \| `openrouter`            |
+| `INTERNAL_API_KEY`           | Production                    | `dev-internal-api-key` (dev), test fallback | Internal key expected in `x-internal-api-key` |
+| `GEMINI_API_KEY`             | When `AI_PROVIDER=gemini`     | —                                           | Google Gemini API key                         |
+| `OPENROUTER_API_KEY`         | When `AI_PROVIDER=openrouter` | —                                           | OpenRouter API key                            |
+| `OPENROUTER_MODEL`           | No                            | `deepseek/deepseek-chat:free`               | OpenRouter model id                           |
+| `CORS_ORIGIN`                | No                            | `http://localhost:5173` (dev), none (prod)  | Allowed browser origin(s), comma-separated    |
+| `RATE_LIMIT_MAX`             | No                            | `60`                                        | Shared fallback rate limit max per IP         |
+| `RATE_LIMIT_WINDOW`          | No                            | `60000`                                     | Shared fallback window in milliseconds        |
+| `AI_RATE_LIMIT_MAX`          | No                            | `RATE_LIMIT_MAX`                            | Max requests per window per IP on `/api/ai/*` |
+| `AI_RATE_LIMIT_WINDOW`       | No                            | `RATE_LIMIT_WINDOW`                         | AI rate limit window in milliseconds          |
+| `CV_PARSE_RATE_LIMIT_MAX`    | No                            | `10`                                        | Max CV parse requests per window per IP       |
+| `CV_PARSE_RATE_LIMIT_WINDOW` | No                            | `RATE_LIMIT_WINDOW`                         | CV parse rate limit window in milliseconds    |
 
-> **Production note:** `CORS_ORIGIN` has no default in production. If unset, cross-origin browser requests are blocked. Always set it to your Vercel frontend URL.
+> **Production note:** `CORS_ORIGIN` has no default in production. If unset, cross-origin browser requests are blocked. Set it to your Vercel frontend URL. CORS supports comma-separated origins, but it is not a replacement for internal API authentication.
 
 ## Scripts
 
@@ -169,19 +176,23 @@ npm start
 /health
 ```
 
-### Frontend API base URL (Vercel)
+### Frontend API access (Vercel)
 
-In your frontend repository, set an environment variable pointing to this backend:
+The production Vite frontend should not call protected backend routes directly from browser code. Browser code should call same-origin Vercel Function routes, and those functions should forward requests to this backend with `x-internal-api-key`.
 
+Frontend/Vercel server-side environment variables:
+
+```txt
+BACKEND_API_URL=https://your-backend-url.onrender.com
+INTERNAL_API_KEY=<same-secret-configured-in-backend>
 ```
-VITE_API_BASE_URL=https://your-backend-url.onrender.com
-```
 
-Use that variable when constructing API calls instead of hardcoding the URL.
+Do not expose this secret through `VITE_*` variables. See `docs/api-auth.md` for the full contract, `docs/vercel-proxy.md` for Vercel Function examples, `docs/deployment-auth-checklist.md` before deploying, and `docs/next-steps.md` for the implementation/deployment sequence.
 
 ## Deployment checklist
 
 - [ ] `NODE_ENV` set to `production`
+- [ ] `INTERNAL_API_KEY` set to a long random production secret
 - [ ] `AI_PROVIDER` set to `gemini`
 - [ ] Provider API key set (`GEMINI_API_KEY` for Gemini or `OPENROUTER_API_KEY` for OpenRouter)
 - [ ] `CORS_ORIGIN` set to the Vercel frontend URL (e.g. `https://cv-builder.vercel.app`)

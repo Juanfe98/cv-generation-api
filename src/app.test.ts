@@ -1,6 +1,8 @@
 import { buildApp } from './app';
 import type { FastifyInstance } from 'fastify';
 
+const AUTH_HEADERS = { 'x-internal-api-key': 'test-internal-api-key' };
+
 describe('App hardening', () => {
   let app: FastifyInstance;
 
@@ -19,7 +21,7 @@ describe('App hardening', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
-        headers: { origin: 'http://localhost:5173' },
+        headers: { ...AUTH_HEADERS, origin: 'http://localhost:5173' },
         payload: { text: 'Responsible for backend services.', section: 'experience' },
       });
 
@@ -43,7 +45,7 @@ describe('App hardening', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
-        headers: { origin: 'https://evil.example.com' },
+        headers: { ...AUTH_HEADERS, origin: 'https://evil.example.com' },
         payload: { text: 'Some text.', section: 'experience' },
       });
 
@@ -70,6 +72,7 @@ describe('App hardening', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: oversized,
       });
 
@@ -86,6 +89,7 @@ describe('App hardening', () => {
       const res = await app.inject({
         method: 'POST',
         url: '/api/ai/improve-text',
+        headers: AUTH_HEADERS,
         payload: largeButValid,
       });
 

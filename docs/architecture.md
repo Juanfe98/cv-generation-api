@@ -8,6 +8,12 @@ This project uses a small modular architecture with explicit boundaries. Keep it
 HTTP route → use case → service/provider interface → external dependency
 ```
 
+## Production access boundary
+
+The product frontend is a Vite static site deployed to Vercel. Browser code must call same-origin Vercel Function routes for protected API operations; those functions forward requests to this backend with the internal `x-internal-api-key` header.
+
+See `docs/api-auth.md` for the full internal API authentication contract.
+
 ## Layers
 
 ### Routes: `src/routes/*.routes.ts`
